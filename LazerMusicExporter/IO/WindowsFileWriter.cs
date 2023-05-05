@@ -32,7 +32,7 @@ public class WindowsFileWriter : IFileWriter
 
         return _exportSettings.OverwriteMode switch
         {
-            OverwriteMode.None => OverwriteModeNode(source, destination),
+            OverwriteMode.None => OverwriteModeNone(source, destination),
             OverwriteMode.IgnoreIfSame => OverwriteModeIgnoreIfSame(source, destination),
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -43,7 +43,7 @@ public class WindowsFileWriter : IFileWriter
     /// </summary>
     /// <param name="source">Source file path</param>
     /// <param name="destination">Original destination path</param>
-    private OperationResult<string> OverwriteModeNode(string source, string destination)
+    private static OperationResult<string> OverwriteModeNone(string source, string destination)
     {
         var existingFile = new FileInfo(destination);
         var fileName = existingFile.Name.Split('.').First();
@@ -102,7 +102,7 @@ public class WindowsFileWriter : IFileWriter
         return CopyFile(source, newDestination);
     }
 
-    private OperationResult<string> CopyFile(string source, string destination)
+    private static OperationResult<string> CopyFile(string source, string destination)
     {
         File.Copy(source, destination, true);
         return OperationResult<string>.Success(destination);
