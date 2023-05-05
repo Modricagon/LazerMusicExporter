@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LazerMusicExporter", "LazerMusicExporter\LazerMusicExporter.csproj", "{4E4C3FB6-BB7F-44BC-B86F-C7AF28F31A32}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4E4C3FB6-BB7F-44BC-B86F-C7AF28F31A32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E4C3FB6-BB7F-44BC-B86F-C7AF28F31A32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E4C3FB6-BB7F-44BC-B86F-C7AF28F31A32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E4C3FB6-BB7F-44BC-B86F-C7AF28F31A32}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8A58C0DB-DC17-4041-938D-D8FE17E7276B}
+	EndGlobalSection
+EndGlobal
