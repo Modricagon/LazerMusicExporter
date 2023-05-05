@@ -19,23 +19,38 @@ public class ExportSessionBuilder : IExportSessionBuilder
         _metadataStringProvider = metadataStringProvider;
     }
 
-    public OperationResult<ExportSession> BuildFromBeatmapSet(BeatmapSet beatmapSet, string? collectionName)
+    public IEnumerable<OperationResult<ExportSession>> Build(BeatmapSet beatmapSet, string? collectionName)
     {
-        var metadata = beatmapSet.Metadata();
+        var distinctBeatmaps = beatmapSet.DistinctBeatmaps().ToList();
+        if (distinctBeatmaps.Count == 1)
+        {
+            return new []
+            {
+                BuildSession(distinctBeatmaps.Single(), collectionName)
+            };
+        }
 
+        return distinctBeatmaps.Where(beatmap => !string.IsNullOrWhiteSpace(beatmap.DifficultyName))
+            .Select(beatmap => BuildSession(beatmap, collectionName, beatmap.DifficultyName));
+    }
+
+    public OperationResult<ExportSession> Build(Beatmap beatmap, string? collectionName) => BuildSession(beatmap, collectionName);
+
+    private OperationResult<ExportSession> BuildSession(Beatmap beatmap, string? collectionName, string? version = null)
+    {
+        var metadata = beatmap.Metadata;
         if (metadata is null)
         {
             return OperationResult<ExportSession>.Failed("Metadata was null");
         }
 
-        var audioFile = beatmapSet.AudioFile();
+        var audioFile = beatmap.AudioFile();
         if (audioFile is null)
         {
             return OperationResult<ExportSession>.Failed("Could not find matching audio file");
         }
 
         var audioFileExtension = audioFile.Filename?.Split('.').LastOrDefault();
-
         if (string.IsNullOrWhiteSpace(audioFileExtension))
         {
             return OperationResult<ExportSession>.Failed("Audio file did not have valid extension");
@@ -64,7 +79,9 @@ public class ExportSessionBuilder : IExportSessionBuilder
         var artist = FileHelpers.ReplaceInvalidChars(_metadataStringProvider.GetArtist(metadata));
 
         var fileName = string.IsNullOrWhiteSpace(artist) ? title : $"{artist} - {title}";
-        var fileNameWithExtension = $"{fileName}.{audioFileExtension}";
+        var fileNameWithExtension = !string.IsNullOrWhiteSpace(version)
+            ? $"{fileName} [{FileHelpers.ReplaceInvalidChars(version)}].{audioFileExtension}"
+            : $"{fileName}.{audioFileExtension}";
 
         var outputDirectory = string.IsNullOrWhiteSpace(collectionName)
             ? Path.Combine(_exportSettings.OutputDirectory, fileNameWithExtension)
@@ -81,6 +98,7 @@ public class ExportSessionBuilder : IExportSessionBuilder
             Directory.CreateDirectory(directoryName);
         }
 
-        return OperationResult<ExportSession>.Success(new ExportSession(hashedFile.FullName, outputDirectory, fileNameWithExtension));
+        return OperationResult<ExportSession>.Success(new ExportSession(beatmap, hashedFile.FullName, outputDirectory,
+            fileNameWithExtension));
     }
 }

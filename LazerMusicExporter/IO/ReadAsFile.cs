@@ -1,4 +1,4 @@
-﻿namespace LazerMusicExporter.Core;
+﻿namespace LazerMusicExporter.IO;
 
 public class ReadAsFile : TagLib.File.IFileAbstraction
 {

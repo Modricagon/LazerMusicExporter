@@ -14,13 +14,8 @@ public class BeatmapSetProvider : IBeatmapSetProvider
         _logger = logger;
     }
 
-    public IQueryable<BeatmapSet> GetCollectionBeatmapSets(string collectionName)
+    public IQueryable<Beatmap> GetCollectionBeatmaps(string collectionName)
     {
-        if (string.IsNullOrWhiteSpace(collectionName))
-        {
-            return GetAllBeatmapSets();
-        }
-
         var realmInstance = _osuRealmFactory.GetInstance();
 
         _logger.LogInformation("Loading beatmaps from collectionName: {CollectionName}", collectionName);
@@ -34,25 +29,19 @@ public class BeatmapSetProvider : IBeatmapSetProvider
 
         var beatmaps = realmInstance.All<Beatmap>();
 
-        var selectedBeatmapSets = Enumerable.Empty<BeatmapSet>().AsQueryable();
+        var selectedBeatmaps = Enumerable.Empty<Beatmap>().AsQueryable();
 
         foreach (var beatmap in beatmaps)
         {
-            if (beatmap.BeatmapSet is null)
-            {
-                continue;
-            }
-
             if (selectedBeatmapMD5s.Contains(beatmap.MD5Hash) || selectedBeatmapMD5s.Contains(beatmap.OnlineMD5Hash))
             {
-
-                selectedBeatmapSets = selectedBeatmapSets.Append(beatmap.BeatmapSet);
+                selectedBeatmaps = selectedBeatmaps.Append(beatmap);
             }
         }
 
         _logger.LogInformation("Loaded beatmaps");
 
-        return selectedBeatmapSets;
+        return selectedBeatmaps;
     }
 
     public IQueryable<BeatmapSet> GetAllBeatmapSets()

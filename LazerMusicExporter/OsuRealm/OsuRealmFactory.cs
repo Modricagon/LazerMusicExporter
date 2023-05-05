@@ -19,7 +19,7 @@ public class OsuRealmFactory : IOsuRealmFactory
         return RealmHelper.GetInstanceByRecursiveSchemaVersion(schemaVersion => new RealmConfiguration(Path.Combine(_exportSettings.OsuDirectory, _realmName))
         {
             IsReadOnly = true,
-            SchemaVersion = 26
+            SchemaVersion = schemaVersion
         }) ?? throw new InvalidOperationException("Failed to load client.realm");
     }
 }

@@ -4,7 +4,7 @@ namespace LazerMusicExporter.OsuRealm;
 
 public interface IBeatmapSetProvider
 {
-    public IQueryable<BeatmapSet> GetCollectionBeatmapSets(string collectionName);
+    public IQueryable<Beatmap> GetCollectionBeatmaps(string collectionName);
 
     public IQueryable<BeatmapSet> GetAllBeatmapSets();
 }

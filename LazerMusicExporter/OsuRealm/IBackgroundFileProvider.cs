@@ -4,5 +4,5 @@ namespace LazerMusicExporter.OsuRealm;
 
 public interface IBackgroundFileProvider
 {
-    public RealmNamedFileUsage? GetBackgroundFile(BeatmapSet beatmapSet);
+    public RealmNamedFileUsage? GetBackgroundFile(Beatmap beatmap);
 }

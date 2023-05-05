@@ -5,5 +5,5 @@ namespace LazerMusicExporter.IO;
 
 public interface IMetadataWriter
 {
-    public OperationResult Write(string filePath, BeatmapSet beatmapSet, string? collectionName);
+    public OperationResult Write(string filePath, Beatmap beatmap, string? collectionName);
 }

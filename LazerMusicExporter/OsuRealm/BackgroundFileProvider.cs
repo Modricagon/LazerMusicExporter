@@ -15,21 +15,21 @@ public class BackgroundFileProvider : IBackgroundFileProvider
         _osuFiles = osuFiles;
     }
 
-    public RealmNamedFileUsage? GetBackgroundFile(BeatmapSet beatmapSet)
+    public RealmNamedFileUsage? GetBackgroundFile(Beatmap beatmap)
     {
-        var backgroundFileRealName = beatmapSet.Metadata()?.BackgroundFile;
+        var backgroundFileRealName = beatmap.Metadata?.BackgroundFile;
 
         if (string.IsNullOrWhiteSpace(backgroundFileRealName))
         {
-            return FallbackBackgroundFile(beatmapSet);
+            return FallbackBackgroundFile(beatmap.BeatmapSet);
         }
 
-        var file = beatmapSet.Files.FirstOrDefault(f =>
+        var file = beatmap.BeatmapSet?.Files.FirstOrDefault(f =>
             backgroundFileRealName.Equals(f.Filename, StringComparison.InvariantCultureIgnoreCase));
 
         if (string.IsNullOrWhiteSpace(file?.File?.Hash))
         {
-            return FallbackBackgroundFile(beatmapSet);
+            return FallbackBackgroundFile(beatmap.BeatmapSet);
         }
 
         return file;
@@ -40,8 +40,13 @@ public class BackgroundFileProvider : IBackgroundFileProvider
     /// </summary>
     /// <param name="beatmapSet"></param>
     /// <returns></returns>
-    private RealmNamedFileUsage? FallbackBackgroundFile(BeatmapSet beatmapSet)
+    private RealmNamedFileUsage? FallbackBackgroundFile(BeatmapSet? beatmapSet)
     {
+        if (beatmapSet is null)
+        {
+            return null;
+        }
+
         RealmNamedFileUsage? biggestFile = null;
         FileInfo? biggestFileInfo = null;
 

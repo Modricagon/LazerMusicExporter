@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using LazerMusicExporter.Configuration;
 using LazerMusicExporter.Core;
 using LazerMusicExporter.IO;
@@ -55,7 +54,7 @@ public class BeatmapExporter : IBeatmapExporter
         {
             foreach (var collection in _exportSettings.Collections)
             {
-                ExportCore(_beatmapSetProvider.GetCollectionBeatmapSets(collection), collection);
+                ExportCore(_beatmapSetProvider.GetCollectionBeatmaps(collection), collection);
             }
         }
 
@@ -67,47 +66,87 @@ public class BeatmapExporter : IBeatmapExporter
         return Task.CompletedTask;
     }
 
-    private void ExportCore(IQueryable<BeatmapSet> beatmapSets, string? collectionName = null)
+    private void ExportCore<T>(IQueryable<T> items, string? collectionName = null)
     {
         double count = 1;
-        foreach (var beatmapSet in beatmapSets)
+        double total = items.Count();
+        foreach (var item in items)
         {
-            Console.Title = $"{collectionName} {Math.Round(count/beatmapSets.Count() * 100, 2)}% {count}/{beatmapSets.Count()}";
-
-            var exportResult = ExportBeatmapSet(beatmapSet, collectionName);
-
-            switch (exportResult.Result)
+            Console.Title = $"{collectionName} {Math.Round(count / total * 100, 2)}% {count}/{total}";
+            switch (item)
             {
-                case ActionResult.NotApplicable:
-                    _ignoredFiles++;
+                case Beatmap beatmap:
+                    var result = ExportBeatmap(beatmap, collectionName);
+                    HandleOperationResult(result);
                     break;
-                case ActionResult.Failed:
-                    var beatmapSetFileName = exportResult.ResultData?.FileName ?? beatmapSet.ID.ToString();
-                    _logger.LogError("{ID}: {ErrorMessage}", beatmapSetFileName, exportResult.ErrorMessage);
-                    _failedFiles++;
+                case BeatmapSet beatmapSet:
+                    var results = ExportBeatmapSet(beatmapSet, collectionName);
+                    results.ForEach(HandleOperationResult);
+                    if (results.Count > 1)
+                    {
+                        // If multiple audio files were found inside a beatmap set
+                        // then update the total to reflect the new found files
+                        total += results.Count - 1;
+                    }
                     break;
-                case ActionResult.Success:
-                    _newFiles++;
-                    break;
-                default:
-                    throw new UnreachableException();
             }
-
             count++;
         }
     }
 
-    private OperationResult<ExportSession> ExportBeatmapSet(BeatmapSet beatmapSet, string? collectionName)
+    private void HandleOperationResult(OperationResult<ExportSession> exportResult)
     {
-        var exportSessionResult = _exportSessionBuilder.BuildFromBeatmapSet(beatmapSet, collectionName);
+        var beatmapSetFileName = exportResult.ResultData?.FileName ?? exportResult.ResultData?.Beatmap.ID.ToString();
+        switch (exportResult.Result)
+        {
+            case ActionResult.NotApplicable:
+                _ignoredFiles++;
+                break;
+            case ActionResult.Failed:
+                _logger.LogError("{ID}: {ErrorMessage}", beatmapSetFileName, exportResult.ErrorMessage);
+                _failedFiles++;
+                break;
+            case ActionResult.Success:
+                _newFiles++;
+                break;
+            default:
+                throw new UnreachableException();
+        }
+    }
+
+    private List<OperationResult<ExportSession>> ExportBeatmapSet(BeatmapSet beatmapSet, string? collectionName = null)
+    {
+        var exportSessionResults = _exportSessionBuilder.Build(beatmapSet, collectionName);
+
+        var results = new List<OperationResult<ExportSession>>();
+        foreach (var exportSessionResult in exportSessionResults)
+        {
+            if (exportSessionResult.ResultData is null || exportSessionResult.Result is not ActionResult.Success)
+            {
+                results.Add(exportSessionResult);
+                continue;
+            }
+
+            results.Add(ExportFromSession(exportSessionResult.ResultData, collectionName));
+        }
+
+        return results;
+    }
+
+    private OperationResult<ExportSession> ExportBeatmap(Beatmap beatmap, string? collectionName = null)
+    {
+        var exportSessionResult = _exportSessionBuilder.Build(beatmap, collectionName);
 
         if (exportSessionResult.ResultData is null || exportSessionResult.Result is not ActionResult.Success)
         {
             return exportSessionResult;
         }
 
-        var exportSession = exportSessionResult.ResultData;
+        return ExportFromSession(exportSessionResult.ResultData, collectionName);
+    }
 
+    private OperationResult<ExportSession> ExportFromSession(ExportSession exportSession, string? collectionName)
+    {
         var fileCopyResult = _fileWriter.Copy(exportSession.SourceAudioPath, exportSession.DestinationAudioPath);
 
         if (fileCopyResult.ResultData is null || fileCopyResult.Result is not ActionResult.Success)
@@ -115,7 +154,7 @@ public class BeatmapExporter : IBeatmapExporter
             return fileCopyResult.RePackage(() => exportSession);
         }
 
-        var writeMetadataResult = _metadataWriter.Write(fileCopyResult.ResultData, beatmapSet, collectionName);
+        var writeMetadataResult = _metadataWriter.Write(fileCopyResult.ResultData, exportSession.Beatmap, collectionName);
 
         if (writeMetadataResult.Result is not ActionResult.Success)
         {

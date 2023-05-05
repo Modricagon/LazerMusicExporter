@@ -2,7 +2,6 @@ using LazerMusicExporter.Configuration;
 using LazerMusicExporter.Core;
 using LazerMusicExporter.Models;
 using LazerMusicExporter.OsuRealm;
-using Microsoft.Extensions.Logging;
 using TagLib;
 using File = System.IO.File;
 
@@ -11,34 +10,32 @@ namespace LazerMusicExporter.IO;
 public class AudioMetadataWriter : IMetadataWriter
 {
     private readonly IExportSettings _exportSettings;
-    private readonly ILogger<AudioMetadataWriter> _logger;
     private readonly IMetadataStringProvider _metadataStringProvider;
     private readonly IBackgroundFileProvider _backgroundFileProvider;
     private readonly IOsuFiles _osuFiles;
 
-    public AudioMetadataWriter(IExportSettings exportSettings, ILogger<AudioMetadataWriter> logger, IMetadataStringProvider metadataStringProvider, IBackgroundFileProvider backgroundFileProvider, IOsuFiles osuFiles)
+    public AudioMetadataWriter(IExportSettings exportSettings, IMetadataStringProvider metadataStringProvider, IBackgroundFileProvider backgroundFileProvider, IOsuFiles osuFiles)
     {
         _exportSettings = exportSettings;
-        _logger = logger;
         _metadataStringProvider = metadataStringProvider;
         _backgroundFileProvider = backgroundFileProvider;
         _osuFiles = osuFiles;
     }
 
-    public OperationResult Write(string filePath, BeatmapSet beatmapSet, string? collectionName)
+    public OperationResult Write(string filePath, Beatmap beatmap, string? collectionName)
     {
         var file = TagLib.File.Create(filePath);
 
-        var writeResult = WriteCore(file, beatmapSet, collectionName);
+        var writeResult = WriteCore(file, beatmap, collectionName);
 
         file.Save();
         file.Dispose();
         return writeResult;
     }
 
-    private OperationResult WriteCore(TagLib.File file, BeatmapSet beatmapSet, string? collectionName)
+    private OperationResult WriteCore(TagLib.File file, Beatmap beatmap, string? collectionName)
     {
-        var metadata = beatmapSet.Metadata();
+        var metadata = beatmap.Metadata;
 
         if (metadata is not null)
         {
@@ -70,11 +67,9 @@ public class AudioMetadataWriter : IMetadataWriter
             file.Tag.Comment = "Exported with LazerMusicExporter";
         }
 
-        var bpm = beatmapSet.Beatmaps.FirstOrDefault(beatmap => beatmap.BPM > 0)?.BPM;
-
-        if (bpm is not null)
+        if (beatmap.BPM > 0)
         {
-            var roundedBpm = Math.Round(bpm.Value);
+            var roundedBpm = Math.Round(beatmap.BPM);
             file.Tag.BeatsPerMinute = Convert.ToUInt32(roundedBpm);
         }
 
@@ -93,7 +88,7 @@ public class AudioMetadataWriter : IMetadataWriter
             return OperationResult.Success();
         }
 
-        var backgroundFile = _backgroundFileProvider.GetBackgroundFile(beatmapSet);
+        var backgroundFile = _backgroundFileProvider.GetBackgroundFile(beatmap);
         if (backgroundFile is null || string.IsNullOrWhiteSpace(backgroundFile.File?.Hash))
         {
             return OperationResult.Success();
