@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using LazerMusicExporter.Configuration;
+﻿using LazerMusicExporter.Configuration;
 using LazerMusicExporter.Core;
 using LazerMusicExporter.OsuRealm;
 using Microsoft.Extensions.Hosting;
