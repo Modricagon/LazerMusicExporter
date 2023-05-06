@@ -16,7 +16,7 @@ Exports include (where available)
 
 When exporting collections, the album name metadata will be replaced with the name of your ingame Osu! collection! This way you can make your own custom albums which can all be bundled together and recognised in other software or on other devices.
 
-# Configuraiton / How to use!
+# Configuration / How to use!
 To configure the application you should find the appsettings.json file.
 
 ```
@@ -40,7 +40,7 @@ To configure the application you should find the appsettings.json file.
 | outputDirectory | Root directory for your file to be outputted | Yes | C:\Users\name\Desktop\output | - |
 | overwriteMode | Mode which will be used for overwriting existing files. See OverwriteMode Section | Yes | 0 / 1 | - |
 | includeArtwork | Flag for including the beatmap background on outputted files | No | true, false | true |
-| customArtwork | Path to custom artwork image which will be used in place of beatmap background images | No | C:\Users\name\Pictures\MyCustomArtwork.png | - |
+| customArtwork | Path to custom artwork image which will be used in place of beatmap background images | No | C:\Pictures\MyCustomArtwork.png | - |
 | namingScheme | Preferred naming scheme. See NamingScheme Section | No | english / native  | english |
 | trackLengthSimilarity | How close, in seconds, two song files (with the same name), length must be to be considered the same song | No | Any number of seconds | 10 |
 | preferHigherBitrate | Overwrite lower bitrate versions if a higher bitrate version is found | No | true / false | true |
