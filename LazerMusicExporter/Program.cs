@@ -18,6 +18,7 @@ using var host = Host.CreateDefaultBuilder(args)
                 options.SingleLine = true;
                 options.TimestampFormat = "HH:mm:ss ";
             });
+            builder.AddFilter("Microsoft", LogLevel.Warning);
         });
 
         services.AddHostedService<ExportService>();
