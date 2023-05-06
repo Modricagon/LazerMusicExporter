@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace LazerMusicExporter.OsuRealm;
 
-public class BeatmapSetProvider : IBeatmapSetProvider
+public class BeatmapProvider : IBeatmapProvider
 {
     private readonly IOsuRealmFactory _osuRealmFactory;
-    private readonly ILogger<BeatmapSetProvider> _logger;
+    private readonly ILogger<BeatmapProvider> _logger;
 
-    public BeatmapSetProvider(IOsuRealmFactory osuRealmFactory, ILogger<BeatmapSetProvider> logger)
+    public BeatmapProvider(IOsuRealmFactory osuRealmFactory, ILogger<BeatmapProvider> logger)
     {
         _osuRealmFactory = osuRealmFactory;
         _logger = logger;

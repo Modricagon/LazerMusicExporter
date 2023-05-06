@@ -25,9 +25,11 @@ using var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IExportSettings, ExportSettings>();
         services.AddSingleton<IOsuRealmFactory, OsuRealmFactory>();
         services.AddTransient<IOsuFiles, OsuFiles>();
-        services.AddTransient<IExportSessionBuilder, ExportSessionBuilder>();
-        services.AddTransient<IBeatmapSetProvider, BeatmapSetProvider>();
+        services.AddTransient<ISessionBuilder, SessionBuilder>();
+        services.AddTransient<IBeatmapProvider, BeatmapProvider>();
+        services.AddTransient<IBeatmapSetExporter, BeatmapSetExporter>();
         services.AddTransient<IBeatmapExporter, BeatmapExporter>();
+        services.AddTransient<ITransactionConsumer, TransactionConsumer>();
         services.AddTransient<IFileWriter, WindowsFileWriter>();
         services.AddTransient<IMetadataStringProvider, MetadataStringProvider>();
         services.AddTransient<IBackgroundFileProvider, BackgroundFileProvider>();

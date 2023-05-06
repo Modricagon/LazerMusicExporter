@@ -1,6 +1,9 @@
-﻿namespace LazerMusicExporter;
+﻿using LazerMusicExporter.Core;
+using LazerMusicExporter.Models;
+
+namespace LazerMusicExporter;
 
 public interface IBeatmapExporter
 {
-    public Task Export();
+    public ExportStatistics Export(IQueryable<Beatmap> beatmaps, string? collectionName = null);
 }

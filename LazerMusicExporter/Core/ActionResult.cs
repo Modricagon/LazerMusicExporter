@@ -4,5 +4,5 @@ public enum ActionResult
 {
     Success,
     Failed,
-    NotApplicable
+    None
 }

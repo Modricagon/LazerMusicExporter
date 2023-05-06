@@ -6,7 +6,7 @@ public static class OperationResultExtensions
     {
         return new OperationResult<TOut>
         {
-            ErrorMessage = result.ErrorMessage,
+            Message = result.Message,
             Result = result.Result,
             ResultData = property()
         };
@@ -17,7 +17,7 @@ public static class OperationResultExtensions
     {
         return new OperationResult<TOut>
         {
-            ErrorMessage = result.ErrorMessage,
+            Message = result.Message,
             Result = result.Result,
             ResultData = property(result.ResultData)
         };

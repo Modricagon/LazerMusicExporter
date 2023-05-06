@@ -3,7 +3,7 @@
 public class OperationResult
 {
     public ActionResult Result;
-    public string? ErrorMessage;
+    public string? Message;
 
     public static OperationResult Success()
     {
@@ -13,21 +13,21 @@ public class OperationResult
         };
     }
 
-    public static OperationResult Failed(string errorMessage)
+    public static OperationResult Failed(string message)
     {
         return new OperationResult
         {
             Result = ActionResult.Failed,
-            ErrorMessage = errorMessage
+            Message = message
         };
     }
 
-    public static OperationResult NotApplicable(string errorMessage)
+    public static OperationResult None(string? message = null)
     {
         return new OperationResult
         {
-            Result = ActionResult.NotApplicable,
-            ErrorMessage = errorMessage
+            Result = ActionResult.None,
+            Message = message
         };
     }
 }
@@ -43,19 +43,19 @@ public class OperationResult<T> : OperationResult
             ResultData = resultData
         };
 
-    public new static OperationResult<T> Failed(string errorMessage) =>
+    public new static OperationResult<T> Failed(string message) =>
         new()
         {
             Result = ActionResult.Failed,
-            ErrorMessage = errorMessage
+            Message = message
         };
 
-    public new static OperationResult<T> NotApplicable(string errorMessage)
+    public new static OperationResult<T> None(string? message = null)
     {
         return new OperationResult<T>
         {
-            Result = ActionResult.NotApplicable,
-            ErrorMessage = errorMessage
+            Result = ActionResult.None,
+            Message = message
         };
     }
 }

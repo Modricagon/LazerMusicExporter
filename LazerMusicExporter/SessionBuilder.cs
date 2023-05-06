@@ -6,74 +6,75 @@ using LazerMusicExporter.OsuRealm;
 
 namespace LazerMusicExporter;
 
-public class ExportSessionBuilder : IExportSessionBuilder
+public class SessionBuilder : ISessionBuilder
 {
     private readonly IExportSettings _exportSettings;
     private readonly IOsuFiles _osuFiles;
     private readonly IMetadataStringProvider _metadataStringProvider;
 
-    public ExportSessionBuilder(IExportSettings exportSettings, IOsuFiles osuFiles, IMetadataStringProvider metadataStringProvider)
+    public SessionBuilder(IExportSettings exportSettings, IOsuFiles osuFiles, IMetadataStringProvider metadataStringProvider)
     {
         _exportSettings = exportSettings;
         _osuFiles = osuFiles;
         _metadataStringProvider = metadataStringProvider;
     }
 
-    public IEnumerable<OperationResult<ExportSession>> Build(BeatmapSet beatmapSet, string? collectionName)
+    public IEnumerable<OperationResult<Transaction>> Build(BeatmapSet beatmapSet)
     {
         var distinctBeatmaps = beatmapSet.DistinctBeatmaps().ToList();
         if (distinctBeatmaps.Count == 1)
         {
             return new []
             {
-                BuildSession(distinctBeatmaps.Single(), collectionName)
+                BuildSession(distinctBeatmaps.Single(), null)
             };
         }
 
         return distinctBeatmaps.Where(beatmap => !string.IsNullOrWhiteSpace(beatmap.DifficultyName))
-            .Select(beatmap => BuildSession(beatmap, collectionName, beatmap.DifficultyName));
+            .Select(beatmap => BuildSession(beatmap, null, beatmap.DifficultyName));
     }
 
-    public OperationResult<ExportSession> Build(Beatmap beatmap, string? collectionName) => BuildSession(beatmap, collectionName);
+    public OperationResult<Transaction> Build(Beatmap beatmap, string? collectionName) => BuildSession(beatmap, collectionName);
 
-    private OperationResult<ExportSession> BuildSession(Beatmap beatmap, string? collectionName, string? version = null)
+    private OperationResult<Transaction> BuildSession(Beatmap beatmap, string? collectionName, string? version = null)
     {
         var metadata = beatmap.Metadata;
         if (metadata is null)
         {
-            return OperationResult<ExportSession>.Failed("Metadata was null");
+            return OperationResult<Transaction>.Failed("Beatmap had no metadata");
         }
 
         var audioFile = beatmap.AudioFile();
         if (audioFile is null)
         {
-            return OperationResult<ExportSession>.Failed("Could not find matching audio file");
+            return OperationResult<Transaction>.Failed("Beatmap audio file was not registered in the database");
         }
 
         var audioFileExtension = audioFile.Filename?.Split('.').LastOrDefault();
         if (string.IsNullOrWhiteSpace(audioFileExtension))
         {
-            return OperationResult<ExportSession>.Failed("Audio file did not have valid extension");
+            return OperationResult<Transaction>.Failed("Beatmap audio file did not have valid extension");
         }
 
         var audioHash = audioFile.File?.Hash;
         if (audioHash is null)
         {
-            return OperationResult<ExportSession>.Failed("No audio file hash found");
+            return OperationResult<Transaction>.Failed("Beatmap audio file was not registered in the database");
         }
 
         var findHashedFileResult = _osuFiles.FindByHash(audioHash);
         if (findHashedFileResult.ResultData is null)
         {
-            return OperationResult<ExportSession>.Failed("Could not find file by hash");
+            return OperationResult<Transaction>.Failed("Beatmap audio file did not exist in Osu! files");
         }
 
         var hashedFile = findHashedFileResult.ResultData;
 
+        // TODO should this fail if has no title or should it replace the title with the song id for example?
         var title = FileHelpers.ReplaceInvalidChars(_metadataStringProvider.GetTitle(metadata));
         if (string.IsNullOrWhiteSpace(title))
         {
-            return OperationResult<ExportSession>.Failed("Title was null or white space");
+            return OperationResult<Transaction>.Failed("Beatmap metadata missing song title");
         }
 
         var artist = FileHelpers.ReplaceInvalidChars(_metadataStringProvider.GetArtist(metadata));
@@ -90,7 +91,7 @@ public class ExportSessionBuilder : IExportSessionBuilder
         var directoryName = new FileInfo(outputDirectory).DirectoryName;
         if (string.IsNullOrWhiteSpace(directoryName))
         {
-            return OperationResult<ExportSession>.Failed("Directory could not be created");
+            return OperationResult<Transaction>.Failed("Directory path could not be created");
         }
 
         if (!Directory.Exists(directoryName))
@@ -98,7 +99,7 @@ public class ExportSessionBuilder : IExportSessionBuilder
             Directory.CreateDirectory(directoryName);
         }
 
-        return OperationResult<ExportSession>.Success(new ExportSession(beatmap, hashedFile.FullName, outputDirectory,
+        return OperationResult<Transaction>.Success(new Transaction(beatmap, hashedFile.FullName, outputDirectory,
             fileNameWithExtension));
     }
 }

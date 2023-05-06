@@ -21,7 +21,7 @@ public class WindowsFileWriter : IFileWriter
             var songLength = sourceFile.Properties.Duration.TotalSeconds;
             if (songLength < _exportSettings.MinimumSongLength)
             {
-                return OperationResult<string>.NotApplicable("Song length was shorter than the specified minimum length");
+                return OperationResult<string>.None("Song length was shorter than the specified minimum length");
             }
         }
         
@@ -84,7 +84,7 @@ public class WindowsFileWriter : IFileWriter
 
                 if (!_exportSettings.PreferHigherBitrate)
                 {
-                    return OperationResult<string>.NotApplicable("Existing file with similar length already exists");
+                    return OperationResult<string>.None("Existing file with similar length already exists");
                 }
                     
                 if (sourceFile.Properties.AudioBitrate > existingFile.Properties.AudioBitrate)
@@ -92,7 +92,7 @@ public class WindowsFileWriter : IFileWriter
                     // Overwrite if can get higher bit rate
                     return CopyFile(source, destination);
                 }
-                return OperationResult<string>.NotApplicable("Existing file had same or better bit rate");
+                return OperationResult<string>.None("Existing file had same or better bit rate");
             }
 
             newDestination = $"{fileName} ({index}).{existingFileInfo.Extension}";
